@@ -17,6 +17,7 @@ pub struct PatternRule {
 
 #[derive(Debug, Deserialize,Clone)]
 pub struct Config {
+    #[allow(unused)]
     pub abi: Value,
     pub bytecode: String,
     pub operator: String,
@@ -95,6 +96,8 @@ impl Config {
         Ok(())
     }
 
+
+    #[allow(unused)]
     pub fn get_args_addresses(&self) ->(Address, Address) {
         let operator = self.operator.parse::<Address>().unwrap();
         let entrypoint = self.entrypoint.parse::<Address>().unwrap();

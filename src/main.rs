@@ -3,7 +3,7 @@ mod config;
 use ethers::prelude::*;
 use rayon::prelude::*;
 
-use ethers::{abi::Abi,utils::keccak256};
+use ethers::{utils::keccak256};
 use hex::FromHex;
 use std::{thread,sync::Arc, error::Error, sync::atomic::{AtomicBool, AtomicUsize, Ordering}};
 use crate::config::{Config, PatternRule};
@@ -38,14 +38,8 @@ fn compute_create2_address(sender_address: Address, salt: &[u8; 32], deployment_
 
 fn main() -> Result<(), Box<dyn Error>> {
     let config =  Arc::new(Config::load("config.json")?);
-    let provider = Provider::<Http>::try_from(config.rpc.as_str())?;
-    let abi: Abi = serde_json::from_value(config.abi.to_owned())?;
-    let bytecode = Bytes::from(Vec::from_hex(config.bytecode.trim_start_matches("0x"))?);
-    let contract_factory = ContractFactory::new(abi, bytecode, Arc::new(provider));
-    let deployer = contract_factory.deploy(config.get_args_addresses())?.legacy();
+    let bytecode_with_args = Arc::new(Bytes::from(Vec::from_hex(config.bytecode.trim_start_matches("0x"))?));
     let create_call_address: Address = config.get_create2_address();
-
-    let bytecode_with_args = Arc::new(deployer.tx.data().unwrap().to_vec());
     let found = Arc::new(AtomicBool::new(false));
     let counter = Arc::new(AtomicUsize::new(0));
 
